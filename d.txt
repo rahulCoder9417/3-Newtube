@@ -1,0 +1,18 @@
+1- user updation --  {data updates} 
+2- (pages) video model , shot ,photo -- {video  use  id;where video ar called dummy data used;owner will populate in beck to get user avatar name username;subscriber;like comment recommended;for shot state will be useed to get prior 5 data and then append ;through use of id in params like dislike and comment will be shown;photo page state will call get paginated photo and photo component will call like dislike comments}
+3- adding comment like -- {comment 10 coming,scrolling not work of comment in shot,no delete update}
+4- comment replies,playlist --{playlist done nut not update or delete,reply done make nested replies}
+5- uploading and updating video ,shot ,photo --{hogya}
+6- tweets thread --{tweet page adding tweet, line on left ,owner populate} 
+7- subscription dashborad --{done}
+8- chat
+9- notifier(error succes) -- {done}
+10- calling api --{done}
+11- ui change responsive --{done}
+12- close friend story highlits search
+13- reload useffect to login through access
+14- saving access
+15- testing
+ //here for the project
+ project kafi complex tha aur mera man bhi ni tha to project padh lena
+ 

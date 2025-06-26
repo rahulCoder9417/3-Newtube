@@ -1,0 +1,37 @@
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
+
+/* Tailwind Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.text-gradient {
+    background: linear-gradient(90deg, #0d1631, #c674ea);
+    -webkit-background-clip: text;
+    color: transparent;
+
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+}
+/* Custom Scrollbar Styling */
+.custom-scrollbar {
+    /* Thinner scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #2d3748 #646568; /* Thumb: gray-800, Track: gray-300 */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px; /* Thinner scrollbar */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #2d3748; /* gray-800 */
+    border-radius: 30px; /* Rounded corners */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background-color: #e2e8f0; /* gray-300 */
+  }
+  
