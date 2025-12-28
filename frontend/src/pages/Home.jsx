@@ -29,30 +29,48 @@ useEffect(() => {
 }, []);
 
   return (
-    <div className="bg-gray-800 text-white px-8 py-12">
-      {/* Trending tweets */}
-      <section className="mb-12 ">
-        <h2 className="text-4xl font-bold mb-6 text-blue-400">
-          Trending Tweets
-        </h2>
+    <div className="min-h-screen bg-[#0b1220] text-white px-6 py-10">
+
+    {/* ================= Trending Tweets ================= */}
+    <section className="mb-16">
+      <h2 className="mb-4 text-3xl font-bold text-blue-400">
+        Trending Tweets
+      </h2>
+  
+      <div className="rounded-2xl max-w-[60%] mx-auto border border-white/5 bg-[#0f172a] p-6">
         <TweetSlider />
-      </section>
-      
-
-      {/* Trending Topics */}
-      <section className="mb-12 h-16 flex items-center min-w-screen">
-        <h2 className="text-4xl font-bold mb-6 text-blue-400">
-          Trending Topics
-        </h2>
-      </section>
+      </div>
+    </section>
+  
+    {/* ================= Trending Topics ================= */}
+    <section className="mb-16">
+      <h2 className="mb-8 text-3xl font-bold text-blue-400">
+        Trending Topics
+      </h2>
+  
       {data.ed.length !== 0 && (
-          <>
+        <div className="space-y-14">
+          {/* Education */}
+          <div>
+            <h3 className="mb-4 text-xl font-semibold text-white/90">
+              Education
+            </h3>
             <Topics topic="Education" object={data.ed} />
-
+          </div>
+  
+          {/* Comedy */}
+          <div>
+            <h3 className="mb-4 text-xl font-semibold text-white/90">
+              Comedy
+            </h3>
             <Topics topic="Comedy" object={data.sc} />
-          </>
-        )}
-    </div>
+          </div>
+        </div>
+      )}
+    </section>
+  
+  </div>
+  
   );
 };
 

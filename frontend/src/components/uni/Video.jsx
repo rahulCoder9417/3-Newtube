@@ -18,11 +18,11 @@ const VideoP = ({ title, thumbnail, views, duration, createdAt, id="676f9af67e03
 
 
     return (
-        <div className="bg-gray-500 shadow-md rounded-lg overflow-hidden w-72 cursor-pointer relative">
+        <div className="bg-[#05001d] shadow-md rounded-lg overflow-hidden w-72 cursor-pointer relative">
             <img onClick={handleVideoClick} src={thumbnail} alt={title} className="w-full h-36 object-cover" />
-            <div className="p-4">
+            <div className="p-4 ">
                 <h4 className="text-lg font-semibold mb-2">{title}</h4>
-                <p className="text-sm text-black">{views} views • {formattedDuration} • {formattedCreatedAt}</p>
+                <p className="text-sm text-slate-300 ">{views} views • {formattedDuration} • {formattedCreatedAt}</p>
             </div>
 
             {/* Three dots icon for options */}
