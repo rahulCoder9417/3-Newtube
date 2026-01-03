@@ -49,5 +49,5 @@ app.use("/api/v1/chats", chatRouter)
 app.use("/api/v1/photos", photoRouter)
 
 // http://localhost:8000/api/v1/users/register
-
+export default app
 export { app }

@@ -12,7 +12,17 @@ const handler = async (req, res) => {
     await connectDB();
     isConnected = true;
   }
-  return app(req, res);
+  
+  // Use Express app as a request handler
+  return new Promise((resolve, reject) => {
+    app(req, res, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
 };
 
 export default handler;
