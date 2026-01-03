@@ -48,7 +48,7 @@ import chatRouter from "./routes/chat.routes.js"
 
 //routes declaration
 
-app.use("/api/v1/health", (req, res) => res.send("ok"))
+app.get("/api/v1/health", (req, res) => res.send("ok"))
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/subscriptions", subscriptionRouter)
