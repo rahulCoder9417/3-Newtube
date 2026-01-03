@@ -4,7 +4,8 @@ import { app } from "../src/app.js";
 
 dotenv.config();
 
-// Connect DB once per cold start
+// Connect DB once per cold start for vercel
+
 let isConnected = false;
 
 const handler = async (req, res) => {

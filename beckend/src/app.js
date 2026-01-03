@@ -3,18 +3,29 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 
 const app = express()
-app.use(
-    cors({
-      origin: [
+
+// CORS configuration
+const corsOptions = {
+    origin: function (origin, callback) {
+      const allowedOrigins = [
         "https://newtube-ten-omega.vercel.app",
-        "http://localhost:5173"
-      ],
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-      credentials: true
-    })
-  );
-  
+      ];
+      
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+  };
+
+app.use(cors(corsOptions))
 
 app.use(express.json({limit: "16kb"}))
 app.use(express.urlencoded({extended: true, limit: "16kb"}))
