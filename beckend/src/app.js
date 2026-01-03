@@ -5,10 +5,7 @@ import cookieParser from "cookie-parser"
 const app = express()
 app.use(
     cors({
-      origin: [
-        "https://newtube-ten-omega.vercel.app",
-        "http://localhost:5173"
-      ],
+      origin:"*",
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true
