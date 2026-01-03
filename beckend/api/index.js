@@ -11,7 +11,8 @@ let isConnected = false;
 const handler = async (req, res) => {
         // Set CORS headers FIRST, before anything else
         const allowedOrigins = [
-          "https://newtube-ten-omega.vercel.app"
+          "https://newtube-ten-omega.vercel.app",
+          "https://newtube-five.vercel.app"
         ];
         
         const origin = req.headers.origin;
