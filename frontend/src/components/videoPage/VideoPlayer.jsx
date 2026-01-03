@@ -3,10 +3,10 @@ import { onSubmitAxios } from '../../utils/axios';
 
 const VideoPlayer = ({ videoUrl ,id}) => {
     useEffect(() => {
-        const fetchVideo = async () => {
+        const incrementViews = async () => {
         await onSubmitAxios("get", `videos/${id}`);
         };
-        fetchVideo();
+        incrementViews();
     }, [])
     
     return (

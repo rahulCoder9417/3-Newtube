@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaEllipsisV } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { onSubmitAxios } from "../../utils/axios";
 
-function VideoThreeDots({videoId}) {
+function VideoThreeDots({videoId,videoRef}) {
   const userId = useSelector((state) => state.auth.id);
   const [newName, setNewName] = useState("");
   const [showOptions, setShowOptions] = useState(false); // State to toggle the options menu
@@ -23,8 +23,10 @@ function VideoThreeDots({videoId}) {
     }
   };
   const toggleOptions = () => {
+    console.log("toggleOptions");
     fetchPlaylists();
-    setShowOptions(!showOptions);
+    setShowOptions((prev) => !prev);
+    console.log(showOptions);
   };
   const handlePlaylistSelect = async (name, checked, playId) => {
     if (checked) {
@@ -47,18 +49,40 @@ function VideoThreeDots({videoId}) {
       console.error("Error creating playlist", error);
     }
   };
+
+  useEffect(() => {
+    if (!showOptions) return;
+  
+    const handleClickOutside = (event) => {
+      if (
+        videoRef.current &&
+        !videoRef.current.contains(event.target)
+      ) {
+        setShowOptions(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showOptions]);
   return (
-    <>
+    <div className="">
       <div
         className="absolute bottom-10 right-2 text-white cursor-pointer"
-        onClick={toggleOptions}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleOptions();
+        }}
       >
         <FaEllipsisV />
       </div>
 
       {/* Options Menu */}
       {showOptions && (
-        <div className="absolute top-8 right-5 bg-gray-800 text-white p-2 rounded shadow-lg w-64">
+        <div  className="relative rounded-lg  bottom-20  right-3 bg-gray-800 text-white p-2  shadow-lg w-64">
           <div className="mb-2">
             <h5 className="text-sm font-semibold">Select Playlists</h5>
             {playlists.length > 0 ? (
@@ -99,7 +123,7 @@ function VideoThreeDots({videoId}) {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
