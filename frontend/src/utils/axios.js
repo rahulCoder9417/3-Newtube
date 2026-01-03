@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const onSubmitAxios = async (type, url, data = {}, headers = {}, param = {}) => {
   try {
-    const baseUrl = `http://localhost:8000/api/v1/${url}`;
+    const baseUrl =import.meta.env.VITE_BACKEND_URL+ `${url}`;
     let response;
 
     switch (type.toLowerCase()) {
