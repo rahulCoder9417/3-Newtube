@@ -32,6 +32,7 @@ app.use(express.json({limit: "16kb"}))
 app.use(express.urlencoded({extended: true, limit: "16kb"}))
 app.use(express.static("public"))
 app.use(cookieParser())
+app.get("/api/v1/health", (req, res) =>   res.status(200).json({ status: "ok", timestamp: new Date() }))
 
 
 //routes import
@@ -49,7 +50,6 @@ import chatRouter from "./routes/chat.routes.js"
 
 //routes declaration
 
-app.get("/api/v1/health", (req, res) => res.send("ok"))
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/subscriptions", subscriptionRouter)
