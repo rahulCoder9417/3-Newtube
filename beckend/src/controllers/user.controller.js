@@ -94,7 +94,7 @@ const loginUser = asyncHandler(async (req, res) =>{
     
 
     const {email, username, password} = req.body
-    console.log(email);
+
 
     if (!username && !email) {
         throw new ApiError(400, "username or email is required")
@@ -194,9 +194,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             httpOnly: true,
             secure: true
         }
-    
+        const loggedInUser = await User.findById(user._id).select("-password -watchHistory -closeFriends -refreshToken")
+
         const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(user._id)
-        console.log(refreshToken)
+
         return res
         .status(200)
         .cookie("accessToken", accessToken, options)
@@ -214,6 +215,50 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
+const loginViaAccessToken = asyncHandler(async(req, res) => {
+    const incomingAccessToken = req.cookies.accessToken || req.body.accessToken
+
+
+    if (!incomingAccessToken) {
+        return res.status(401).json(new ApiResponse(401, {}, "Unauthorized request"))
+    }
+
+    try {
+        const decodedToken = jwt.verify(
+            incomingAccessToken,
+            process.env.ACCESS_TOKEN_SECRET
+        )
+        const user = await User.findById(decodedToken?._id)
+        if (!user) {
+            return res.status(401).json(new ApiResponse(401, {}, "Invalid access token"))
+        
+       
+        }
+    
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+    
+        const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(user._id)
+
+        return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200, 
+                {
+                    user: user, accessToken, refreshToken
+                },
+                "User logged In Successfully"
+            )
+        )
+    } catch (error) {
+        return res.status(401).json(new ApiResponse(401, {}, error?.message || "Invalid access token"))
+    }
+})
 
 const changeCurrentPassword = asyncHandler(async(req, res) => {
     const {oldPassword, newPassword} = req.body
@@ -276,7 +321,6 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
         throw new ApiError(400, "Avatar file is missing")
     }
 
-    //TODO: delete old image - assignment
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
 
@@ -315,8 +359,7 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
         throw new ApiError(400, "Cover image file is missing")
     }
 
-    //TODO: delete old image - assignment
-
+ 
 
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
@@ -597,6 +640,7 @@ export {
     refreshAccessToken,
     changeCurrentPassword,
     getCurrentUser,
+    loginViaAccessToken,
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,

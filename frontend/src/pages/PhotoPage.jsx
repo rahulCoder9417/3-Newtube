@@ -51,7 +51,7 @@ function PhotoPage() {
   return (
     <div
       id="photo-container"
-      className="flex overflow-y-auto relative bg-gray-900 top-16 items-center flex-col space-y-4 p-4"
+      className="flex overflow-y-auto relative bg-gray-900 items-center flex-col space-y-4 p-4"
       onWheel={handleWheelScroll}
     >
       {photos.map((photo) => (

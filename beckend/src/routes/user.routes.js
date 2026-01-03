@@ -10,6 +10,7 @@ import {
     updateUserCoverImage, 
     getUserChannelProfile, 
     getWatchHistory, 
+    loginViaAccessToken,
     updateAccountDetails,
     removeFromWatchHistory,
     addCloseFriend,
@@ -39,6 +40,7 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser)
 
+router.route("/login-via-access-token").post(loginViaAccessToken)
 //secured routes
 router.route("/logout").post(verifyJWT,  logoutUser)
 router.route("/getUser/:id").get(verifyJWT,  getUserById)
@@ -46,7 +48,6 @@ router.route("/refresh-token").post(refreshAccessToken)
 router.route("/change-password").post(verifyJWT,  upload.none(),changeCurrentPassword)
 router.route("/current-user").get(verifyJWT, getCurrentUser)
 router.route("/update-account").patch(verifyJWT, upload.none(),updateAccountDetails)
-
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
 router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
 

@@ -18,10 +18,12 @@ import Tweets from "./pages/Tweets";
 import Dashboard from "./pages/Dashboard";
 import Youtube from "./pages/Youtube";
 import PlaylistMani from "./pages/PlaylistMani";
+import ClientApp from "./pages/ClientApp";
 function App() {
   return (
     <Router>
       <NavBar />
+      <ClientApp/>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
