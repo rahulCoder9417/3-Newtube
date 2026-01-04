@@ -11,8 +11,7 @@
         "src": "/(.*)",
         "dest": "api/index.js"
       }
-    ],
-  "headers": [
+    ],"headers": [
     {
       "source": "/(.*)",
       "headers": [
