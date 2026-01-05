@@ -12,7 +12,7 @@ const handler = async (req, res) => {
         // Set CORS headers FIRST, before anything else
         const allowedOrigins = [
           "https://newtube-ten-omega.vercel.app",
-          
+          "http://localhost:5173",
      
         ];
         

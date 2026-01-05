@@ -110,50 +110,79 @@ const incrementViews = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, null, "View count updated"));
 });
 
-
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description,tags,duration,videoType} = req.body // tags will come in string like this a.b.c 
-    if (
-        [title,description].some((field) => field?.trim() === "")
-    ) {
-        throw new ApiError(400, "All fields of video are required")
-    }
-    const tagsarray = tags?.trim() ? tags.split('.') : []
-    const videoFileLocal = req.files?.videoFile[0]?.path;
-    const thumbnailLocal = req.files?.thumbnail[0]?.path;
+    console.log("🔵 [VIDEO UPLOAD] Request started");
+    console.log("🔵 [VIDEO UPLOAD] Body:", req.body);
+    console.log("🔵 [VIDEO UPLOAD] Files:", req.files);
+    console.log("🔵 [VIDEO UPLOAD] User:", req.user?._id);
     
-    if (!videoFileLocal && !thumbnailLocal) {
-        throw new ApiError(400, "Video and thumbnail file is required")
+    const { title, description, tags, duration, videoType } = req.body;
+    
+    console.log("🔵 [VIDEO UPLOAD] Parsed data:", { title, description, tags, duration, videoType });
+    
+    if ([title, description].some((field) => field?.trim() === "")) {
+        console.log("❌ [VIDEO UPLOAD] Missing required fields");
+        throw new ApiError(400, "All fields of video are required");
+    }
+    
+    const tagsarray = tags?.trim() ? tags.split('.') : [];
+    console.log("🔵 [VIDEO UPLOAD] Tags array:", tagsarray);
+    
+    const videoFileLocal = req.files?.videoFile?.[0]?.path;
+    const thumbnailLocal = req.files?.thumbnail?.[0]?.path;
+    
+    console.log("🔵 [VIDEO UPLOAD] Video file path:", videoFileLocal);
+    console.log("🔵 [VIDEO UPLOAD] Thumbnail path:", thumbnailLocal);
+    
+    if (!videoFileLocal || !thumbnailLocal) {
+        console.log("❌ [VIDEO UPLOAD] Missing video or thumbnail");
+        throw new ApiError(400, "Video and thumbnail file is required");
     }
 
-    const videoFile = await uploadOnCloudinary(videoFileLocal)
-    const thumbnail = await uploadOnCloudinary(thumbnailLocal)
+    console.log("🔵 [VIDEO UPLOAD] Starting Cloudinary uploads...");
+    
+    const videoFile = await uploadOnCloudinary(videoFileLocal);
+    console.log("🔵 [VIDEO UPLOAD] Video upload result:", videoFile ? "Success" : "Failed");
+    
+    const thumbnail = await uploadOnCloudinary(thumbnailLocal);
+    console.log("🔵 [VIDEO UPLOAD] Thumbnail upload result:", thumbnail ? "Success" : "Failed");
+    
+    if (!videoFile || !thumbnail) {
+        console.log("❌ [VIDEO UPLOAD] Cloudinary upload failed");
+        throw new ApiError(500, "Failed to upload files to Cloudinary");
+    }
+    
     const userId = req.user._id;
+    console.log("🔵 [VIDEO UPLOAD] Creating video document...");
 
     const video = await Video.create({
         videoFile: videoFile.url,
         thumbnail: thumbnail?.url || "",
         title, 
         description,
-        duration ,
+        duration,
         videoType,
-        tags : tagsarray,
-        owner : userId
-    })
+        tags: tagsarray,
+        owner: userId
+    });
+
+    console.log("✅ [VIDEO UPLOAD] Video created:", video._id);
 
     const createdVideo = await Video.findById(video._id).select(
-        "-videoFile -thumbnail  "
-    )
+        "-videoFile -thumbnail"
+    );
 
     if (!createdVideo) {
-        throw new ApiError(500, "Something went wrong while registering the Video")
+        console.log("❌ [VIDEO UPLOAD] Video not found after creation");
+        throw new ApiError(500, "Something went wrong while registering the Video");
     }
 
+    console.log("✅ [VIDEO UPLOAD] Upload complete!");
+    
     return res.status(201).json(
         new ApiResponse(200, createdVideo, "video registered Successfully")
-    )
-
-} )
+    );
+});
 
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params;

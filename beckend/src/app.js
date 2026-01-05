@@ -9,7 +9,9 @@ const corsOptions = {
     origin: function (origin, callback) {
       const allowedOrigins = [
         "https://newtube-ten-omega.vercel.app",
-        "https://newtube-five.vercel.app"
+        "https://newtube-five.vercel.app",
+        "http://localhost:5173",
+
       ];
       
       if (!origin) return callback(null, true);

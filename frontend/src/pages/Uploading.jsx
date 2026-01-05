@@ -171,31 +171,53 @@ const Uploading = () => {
   }, []);
 
   const onSubmit = async () => {
+    console.log("🔵 [FRONTEND] Starting upload...");
+    console.log("🔵 [FRONTEND] Upload type:", uploadType);
+    console.log("🔵 [FRONTEND] Form data:", formData);
+    console.log("🔵 [FRONTEND] Selected tags:", selectedTags);
+    console.log("🔵 [FRONTEND] Uploaded files:", {
+        video: uploadedFiles.video?.name,
+        thumbnail: uploadedFiles.thumbnail?.name,
+        photos: uploadedFiles.photos.map(p => p.name)
+    });
+    
     setIsLoading(true);
     const finalFormData = new FormData();
 
     Object.keys(formData).forEach((key) => {
       if (key === "photos") {
-        formData[key].forEach((file) => finalFormData.append(key, file));
+        formData[key].forEach((file) => {
+            console.log("🔵 [FRONTEND] Adding photo:", file.name, file.size);
+            finalFormData.append(key, file);
+        });
       } else if (formData[key]) {
+        console.log("🔵 [FRONTEND] Adding field:", key, formData[key]);
         finalFormData.append(key, formData[key]);
       }
     });
 
     if (uploadType === UPLOAD_TYPES.LONG_VIDEO || uploadType === UPLOAD_TYPES.SHORT_VIDEO) {
-      finalFormData.append(
-        "videoType",
-        uploadType === UPLOAD_TYPES.LONG_VIDEO ? "long" : "short"
-      );
+      const videoTypeValue = uploadType === UPLOAD_TYPES.LONG_VIDEO ? "long" : "short";
+      console.log("🔵 [FRONTEND] Video type:", videoTypeValue);
+      finalFormData.append("videoType", videoTypeValue);
     }
 
     if (selectedTags.length > 0) {
-      finalFormData.append("tags", selectedTags.join("."));
+      const tagsString = selectedTags.join(".");
+      console.log("🔵 [FRONTEND] Tags string:", tagsString);
+      finalFormData.append("tags", tagsString);
     }
 
     try {
       const endpoint = uploadType === UPLOAD_TYPES.PHOTOS ? "photos/" : "videos/";
-      await onSubmitAxios("post", endpoint, finalFormData);
+      console.log("🔵 [FRONTEND] Sending to endpoint:", endpoint);
+      console.log("🔵 [FRONTEND] FormData entries:");
+      for (let [key, value] of finalFormData.entries()) {
+        console.log(`  ${key}:`, value);
+      }
+      
+      const response = await onSubmitAxios("post", endpoint, finalFormData);
+      console.log("✅ [FRONTEND] Upload successful!", response);
       
       setUploadSuccess(true);
       setTimeout(() => {
@@ -207,10 +229,14 @@ const Uploading = () => {
         setUploadSuccess(false);
       }, 2000);
     } catch (error) {
-      console.error("Error uploading:", error);
-      alert("Upload failed. Please try again.");
+      console.error("❌ [FRONTEND] Upload failed!");
+      console.error("❌ [FRONTEND] Error:", error);
+      console.error("❌ [FRONTEND] Error response:", error.response?.data);
+      console.error("❌ [FRONTEND] Error status:", error.response?.status);
+      alert(`Upload failed: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsLoading(false);
+      console.log("🔵 [FRONTEND] Upload process complete");
     }
   };
 

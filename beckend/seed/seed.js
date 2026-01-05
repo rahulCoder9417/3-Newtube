@@ -8,8 +8,16 @@ import { Like } from "../src/models/like.model.js";
 import { Subscription } from "../src/models/subscription.model.js";
 import { Playlist } from "../src/models/playlist.model.js";
 
+// Use the exact same connection string as your application
 const MONGODB_URI = process.env.MONGODB_URI;
-const HASHED_PASSWORD = "";
+
+if (!MONGODB_URI) {
+  console.error("❌ Error: MONGODB_URI not found in environment variables");
+  console.log("Please set MONGODB_URI in your .env file");
+  process.exit(1);
+}
+
+const HASHED_PASSWORD = "$2a$10$QVWSURofKuQy9kNhjBMCvuj7PMrnqHEtb2/Huaqol3GC/t2UXV/4O";
 
 const tags = ["Music", "Education", "Comedy", "Tech", "Sports"];
 
