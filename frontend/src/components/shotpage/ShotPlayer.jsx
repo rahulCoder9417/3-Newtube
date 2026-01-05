@@ -338,7 +338,7 @@ const ShotPlayer = ({
       {showComments && (
         <>
         <div
-          ref={commentsRef}
+        
           className="absolute md:hidden inset-0 z-20 bg-black bg-opacity-75 rounded-lg flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
@@ -372,6 +372,7 @@ const ShotPlayer = ({
           </div>
         </div>
         <div
+        ref={commentsRef}
           className="absolute hidden md:block left-[110%] top-40 h-[300px] w-[460px] custom-scrollbar bg-gray-800 rounded-lg shadow-lg p-4 overflow-y-auto"
           onWheel={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
