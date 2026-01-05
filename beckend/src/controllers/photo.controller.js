@@ -2,47 +2,47 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Photo } from "../models/photo.model.js";
-import { uploadOnCloudinary,deleteImageFromCloudinary } from "../utils/cloudinary.js";
+import { deleteImageFromCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
 import { deleteRelatedData } from "../utils/comment_like_delete.js";
 const postPhoto = asyncHandler(async (req, res) => {
-    const { title, description } = req.body; // Extract additional fields
-    const files = req.files; // Extract uploaded files (multiple photos)
+    const { title, description, url, morePhoto } = req.body; 
     const ownerId = req.user._id; 
-    // Validate required fields
-    if (!files || files.length === 0) {
-        throw new ApiError(400, "At least one photo file is required");
+    
+    if (!url) {
+        console.log("❌ [PHOTO UPLOAD] Missing photo URL");
+        throw new ApiError(400, "At least one photo URL is required");
     }
     if (!title || !description) {
+        console.log("❌ [PHOTO UPLOAD] Missing title or description");
         throw new ApiError(400, "Title and description are required");
     }
 
-    // Upload all photos to Cloudinary
-    const uploadPromises = files.map((file) => uploadOnCloudinary(file.path));
-    const cloudinaryResponses = await Promise.all(uploadPromises);
-
-    // Check if uploads succeeded
-    if (!cloudinaryResponses || cloudinaryResponses.length === 0) {
-        throw new ApiError(500, "Failed to upload photos");
+    let additionalPhotos = [];
+    if (morePhoto) {
+        if (typeof morePhoto === 'string') {
+            try {
+                // Try parsing as JSON array first
+                additionalPhotos = JSON.parse(morePhoto);
+            } catch {
+                // If not JSON, split by comma
+                additionalPhotos = morePhoto.split(',').map(p => p.trim()).filter(Boolean);
+            }
+        } else if (Array.isArray(morePhoto)) {
+            additionalPhotos = morePhoto;
+        }
     }
 
-    // Extract the first photo as the main `url` and the rest as `morePhoto`
-    const primaryPhoto = cloudinaryResponses[0];
-    const additionalPhotos = cloudinaryResponses.slice(1).map((response) => response.url);
-
-    // Create the photo document
     const photo = await Photo.create({
-        url: primaryPhoto.url, // First photo URL
+        url: url, 
         title,
         description,
-        morePhoto: additionalPhotos, // Remaining photo URLs
+        morePhoto: additionalPhotos,
         owner: ownerId,
     });
 
-    // Respond with success
     res.status(201).json(new ApiResponse(201, photo, "Photos uploaded successfully"));
 });
-
 const deletePhoto = asyncHandler(async (req, res) => {
     const { id } = req.params;
 

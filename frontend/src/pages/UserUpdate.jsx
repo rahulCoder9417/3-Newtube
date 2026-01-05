@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { onSubmitAxios } from '../utils/axios';
 import { useDispatch } from "react-redux";
 import { login } from "../store/authSlice";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
 const UserUpdate = () => {
   const dispatch = useDispatch();
@@ -32,7 +33,12 @@ const UserUpdate = () => {
     const requestData = new FormData();
     for (const key in formData) {
       if (formData[key]) {
-        requestData.append(key, formData[key]);
+        if (key === "avatar" || key === "coverImage") {
+          const cloudinaryResponse = await uploadToCloudinary(formData[key], "image");
+          requestData.append(key, cloudinaryResponse.secure_url);
+        } else {
+          requestData.append(key, formData[key]);
+        }
       }
     }
 

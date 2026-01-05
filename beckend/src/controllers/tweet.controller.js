@@ -4,16 +4,10 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { deleteLikes } from "../utils/comment_like_delete.js"
 import mongoose from "mongoose";
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
 const createTweet = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const { data, type, parentTweetId } = req.body; 
-    const photo = req.file?.path;
-    let photoUrl = null;
-
-    if (photo) {
-        photoUrl = await uploadOnCloudinary(photo);
-    }
+    const { data, type, parentTweetId,photo } = req.body; 
+  
 
     try {
         if (type === "retweet" && !parentTweetId) {
@@ -26,7 +20,7 @@ const createTweet = asyncHandler(async (req, res) => {
             owner: userId,
             type: type || "parent",
             parentTweetId: parentTweetId || null, // Only set if retweet
-            photo: photoUrl?.url || null, // Set the photo if provided
+            photo: photo || null, // Set the photo if provided
         });
 
         // If this is a retweet, associate it with its parent tweet

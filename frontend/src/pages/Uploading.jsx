@@ -11,7 +11,7 @@ import {
   FaPlay,
 } from "react-icons/fa";
 import { onSubmitAxios } from "../utils/axios";
-
+import { uploadToCloudinary } from "../utils/cloudinary";
 const TAG_OPTIONS = ["Music", "Education", "Comedy", "Tech", "Sports"];
 
 const UPLOAD_TYPES = {
@@ -171,55 +171,67 @@ const Uploading = () => {
   }, []);
 
   const onSubmit = async () => {
-    console.log("🔵 [FRONTEND] Starting upload...");
-    console.log("🔵 [FRONTEND] Upload type:", uploadType);
-    console.log("🔵 [FRONTEND] Form data:", formData);
-    console.log("🔵 [FRONTEND] Selected tags:", selectedTags);
-    console.log("🔵 [FRONTEND] Uploaded files:", {
-        video: uploadedFiles.video?.name,
-        thumbnail: uploadedFiles.thumbnail?.name,
-        photos: uploadedFiles.photos.map(p => p.name)
-    });
-    
+    console.log("🔵 [UPLOAD] Starting upload process...");
+    console.log("🔵 [UPLOAD] Upload type:", uploadType);
     setIsLoading(true);
-    const finalFormData = new FormData();
-
-    Object.keys(formData).forEach((key) => {
-      if (key === "photos") {
-        formData[key].forEach((file) => {
-            console.log("🔵 [FRONTEND] Adding photo:", file.name, file.size);
-            finalFormData.append(key, file);
-        });
-      } else if (formData[key]) {
-        console.log("🔵 [FRONTEND] Adding field:", key, formData[key]);
-        finalFormData.append(key, formData[key]);
-      }
-    });
-
-    if (uploadType === UPLOAD_TYPES.LONG_VIDEO || uploadType === UPLOAD_TYPES.SHORT_VIDEO) {
-      const videoTypeValue = uploadType === UPLOAD_TYPES.LONG_VIDEO ? "long" : "short";
-      console.log("🔵 [FRONTEND] Video type:", videoTypeValue);
-      finalFormData.append("videoType", videoTypeValue);
-    }
-
-    if (selectedTags.length > 0) {
-      const tagsString = selectedTags.join(".");
-      console.log("🔵 [FRONTEND] Tags string:", tagsString);
-      finalFormData.append("tags", tagsString);
-    }
 
     try {
-      const endpoint = uploadType === UPLOAD_TYPES.PHOTOS ? "photos/" : "videos/";
-      console.log("🔵 [FRONTEND] Sending to endpoint:", endpoint);
-      console.log("🔵 [FRONTEND] FormData entries:");
-      for (let [key, value] of finalFormData.entries()) {
-        console.log(`  ${key}:`, value);
+      let videoUrl, thumbnailUrl, photoUrls = [];
+
+      // ===== VIDEO UPLOADS =====
+      if (uploadType === UPLOAD_TYPES.LONG_VIDEO || uploadType === UPLOAD_TYPES.SHORT_VIDEO) {
+     
+        if (uploadedFiles.video) {
+          const videoResult = await uploadToCloudinary(uploadedFiles.video, "video");
+          videoUrl = videoResult.secure_url;
+        }
+
+        if (uploadedFiles.thumbnail) {
+          const thumbnailResult = await uploadToCloudinary(uploadedFiles.thumbnail, "image");
+          thumbnailUrl = thumbnailResult.secure_url;
+        }
       }
-      
-      const response = await onSubmitAxios("post", endpoint, finalFormData);
-      console.log("✅ [FRONTEND] Upload successful!", response);
+
+      // ===== PHOTO UPLOADS =====
+      if (uploadType === UPLOAD_TYPES.PHOTOS) {
+        if (uploadedFiles.photos.length > 0) {
+          const photoPromises = uploadedFiles.photos.map(photo => 
+            uploadToCloudinary(photo, "image")
+          );
+          const photoResults = await Promise.all(photoPromises);
+          photoUrls = photoResults.map(result => result.secure_url);
+        }
+      }
+
+      // ===== PREPARE DATA FOR BACKEND =====
+      const backendData = new FormData();
+
+      if (uploadType === UPLOAD_TYPES.LONG_VIDEO || uploadType === UPLOAD_TYPES.SHORT_VIDEO) {
+        backendData.append("title", formData.title);
+        backendData.append("description", formData.description);
+        backendData.append("videoFile", videoUrl);
+        backendData.append("thumbnail", thumbnailUrl);
+        backendData.append("duration", formData.duration);
+        backendData.append("videoType", uploadType === UPLOAD_TYPES.LONG_VIDEO ? "long" : "short");
+        
+        if (selectedTags.length > 0) {
+          backendData.append("tags", selectedTags.join("."));
+        }
+      } else if (uploadType === UPLOAD_TYPES.PHOTOS) {
+        backendData.append("title", formData.title);
+        backendData.append("description", formData.description);
+        backendData.append("url", photoUrls[0]); 
+        
+        if (photoUrls.length > 1) {
+          backendData.append("morePhoto", JSON.stringify(photoUrls.slice(1)));
+        }
+      }
+
+      const endpoint = uploadType === UPLOAD_TYPES.PHOTOS ? "photos/" : "videos/";
+      await onSubmitAxios("post", endpoint, backendData);
       
       setUploadSuccess(true);
+
       setTimeout(() => {
         reset();
         setFormData({});
@@ -229,17 +241,13 @@ const Uploading = () => {
         setUploadSuccess(false);
       }, 2000);
     } catch (error) {
-      console.error("❌ [FRONTEND] Upload failed!");
-      console.error("❌ [FRONTEND] Error:", error);
-      console.error("❌ [FRONTEND] Error response:", error.response?.data);
-      console.error("❌ [FRONTEND] Error status:", error.response?.status);
+      console.error("❌ [UPLOAD] Upload failed:", error);
+      console.error("❌ [UPLOAD] Error details:", error.response?.data);
       alert(`Upload failed: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsLoading(false);
-      console.log("🔵 [FRONTEND] Upload process complete");
     }
   };
-
   const FilePreview = ({ file, type, onRemove }) => {
     if (!file) return null;
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { onSubmitAxios } from "../utils/axios";
-
+import { uploadToCloudinary } from "../utils/cloudinary";
 function Manipulation() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -38,7 +38,11 @@ function Manipulation() {
       if (type === "video") {
         form.append("tags", formData.tags);
         if (formData.thumbnailLocal) {
-          form.append("thumbnail", formData.thumbnailLocal);
+     
+            const cloudinaryResponse = await uploadToCloudinary(formData.thumbnailLocal, "image");
+         ;
+          
+          form.append("thumbnail",  cloudinaryResponse.secure_url);
         }
       }
 

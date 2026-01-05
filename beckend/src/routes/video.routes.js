@@ -22,17 +22,7 @@ router
     .route("/")
     .get(getAllVideos)
     .post(
-        upload.fields([
-            {
-                name: "videoFile",
-                maxCount: 1,
-            },
-            {
-                name: "thumbnail",
-                maxCount: 1,
-            },
-            
-        ]),
+        upload.none(),
         publishAVideo
     );
 
@@ -46,7 +36,7 @@ router
     .route("/videoManupulate/:videoId")
     .get(getVideoById)
     .delete(deleteVideo)
-    .patch(upload.single("thumbnail"), updateVideo);
+    .patch(upload.none(), updateVideo);
 
 router.route("/videoManupulate/toggle/:videoId").patch(togglePublishStatus);
 router.route("/getrandom/:sample").get(getRandomData);

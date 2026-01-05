@@ -8,6 +8,7 @@ import { registerSchema } from "../utils/schema";
 import { onSubmitAxios } from "../utils/axios";
 import { login } from "../store/authSlice";
 import FilePicker from "../components/forms/FilePicker";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
 const Register = () => {
   const dispatch = useDispatch();
@@ -36,8 +37,10 @@ const Register = () => {
       formData.append("email", data.email);
       formData.append("password", data.password);
       formData.append("username", data.username);
-      formData.append("avatar", data.avatar[0]);
-      formData.append("coverImage", data.coverImage[0]);
+      const avatarResponse = await uploadToCloudinary(data.avatar[0], "image");
+      formData.append("avatar", avatarResponse.secure_url);
+      const coverImageResponse = await uploadToCloudinary(data.coverImage[0], "image");
+      formData.append("coverImage", coverImageResponse.secure_url);
 
       const response = await onSubmitAxios(
         "post",

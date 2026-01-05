@@ -3,7 +3,7 @@ import TweetComponent from "../components/tweet/TweetComponent";
 import Notifier from "../components/uni/Notifier";
 import { onSubmitAxios } from "../utils/axios";
 import { FaPlus, FaTimes, FaImage } from "react-icons/fa";
-
+import { uploadToCloudinary } from "../utils/cloudinary";
 const TweetPage = () => {
   const [tweets, setTweets] = useState([]);
   const [tweetContent, setTweetContent] = useState("");
@@ -103,13 +103,20 @@ const TweetPage = () => {
     e.preventDefault();
     if (!tweetContent.trim() && !tweetFile) return;
 
-    const formData = new FormData();
-    formData.append("data", tweetContent);
-    if (tweetFile) formData.append("photo", tweetFile);
 
     try {
       setVisible(true);
       setLoad(true);
+
+      let photo = null;
+      if (tweetFile) {
+        const cloudinaryResponse = await uploadToCloudinary(tweetFile, "image");
+        photo = cloudinaryResponse.secure_url;
+      }
+      
+    const formData = new FormData();
+    formData.append("data", tweetContent);
+    if (photo) formData.append("photo", photo || null);
       const response = await onSubmitAxios("post", "tweets/", formData);
       setLoad(false);
       

@@ -13,7 +13,7 @@ import { upload } from '../middlewares/multer.middleware.js';
 const router = Router();
 router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
 
-router.route("/").post(upload.single("photo"),createTweet)
+router.route("/").post(upload.none(),createTweet)
                  .get(getPaginatedTweets)
 router.route("/child/:tweetId").get(getTweetChildren);
 router.route("/tweet/:id").get(getTweetById);

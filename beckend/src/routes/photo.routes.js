@@ -9,7 +9,7 @@ router.use(verifyJWT);
 
 router.route("/")
     .get(getPaginatedPhotos) 
-    .post(upload.array("photos",10), postPhoto)
+    .post(upload.none(), postPhoto)
 
 
 router.route("/:id")
