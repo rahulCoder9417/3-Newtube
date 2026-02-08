@@ -1,0 +1,48 @@
+import { View, Text, TextInput, Button } from "react-native";
+import { router } from "expo-router";
+import { useState } from "react";
+
+export default function SignUp() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  function handleSignup() {
+    console.log(email, password);
+
+    // After signup → go to signin
+    router.replace("/sign-in");
+  }
+
+  return (
+    <View style={{ flex: 1, padding: 20, justifyContent: "center", gap: 15 }}>
+      <Text style={{ fontSize: 22, fontWeight: "bold" }}>
+        Create Account
+      </Text>
+
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        style={{
+          borderWidth: 1,
+          padding: 10,
+          borderRadius: 6,
+        }}
+      />
+
+      <TextInput
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+        style={{
+          borderWidth: 1,
+          padding: 10,
+          borderRadius: 6,
+        }}
+      />
+
+      <Button title="Register" onPress={handleSignup} />
+    </View>
+  );
+}
