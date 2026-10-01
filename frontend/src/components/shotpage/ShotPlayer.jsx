@@ -20,6 +20,10 @@ import {
 
 import Comment from "../uni/Comment";
 import Avatar from "../uni/Avatar";
+import "./ShotPlayer.css";
+
+const DOUBLE_TAP_MS = 280;
+const BURST_PARTICLES = 8;
 
 /* -------------------- Utils -------------------- */
 
@@ -75,10 +79,21 @@ const ShotPlayer = ({
 
   const [isLoading, setIsLoading] = useState(true);
 
+  // one entry per double-tap animation currently on screen
+  const [bursts, setBursts] = useState([]);
+  const [likePulse, setLikePulse] = useState(0);
+  const [paused, setPaused] = useState(false);
+
   /* ---------- Refs ---------- */
 
   const videoRef = useRef(null);
   const commentsRef = useRef(null);
+  const lastTapRef = useRef(0);
+  const singleTapTimerRef = useRef(null);
+  // blocks a second like request while the first is in flight
+  const likingRef = useRef(false);
+
+  useEffect(() => () => clearTimeout(singleTapTimerRef.current), []);
 
   /* ---------- Fetch video data ---------- */
 
@@ -209,6 +224,65 @@ const ShotPlayer = ({
     );
   }, [id, action]);
 
+  /* ---------- Double-tap to like ---------- */
+
+  const togglePlay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) video.play().catch(() => {});
+    else video.pause();
+  }, []);
+
+  const likeFromDoubleTap = useCallback(async () => {
+    setLikePulse((n) => n + 1);
+    // double-tap only ever likes; it never removes an existing like
+    if (action === "like" || isLoading || likingRef.current) return;
+    likingRef.current = true;
+    try {
+      await handleLike(
+        "v",
+        id,
+        "Video",
+        setDislikes,
+        setLikes,
+        setAction,
+        action
+      );
+    } finally {
+      likingRef.current = false;
+    }
+  }, [id, action, isLoading]);
+
+  const onTap = useCallback(
+    (e) => {
+      const now = Date.now();
+
+      if (now - lastTapRef.current < DOUBLE_TAP_MS) {
+        clearTimeout(singleTapTimerRef.current);
+        lastTapRef.current = 0;
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        const burst = {
+          key: now,
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+          tilt: Math.round(Math.random() * 30 - 15),
+        };
+        setBursts((prev) => [...prev, burst]);
+        likeFromDoubleTap();
+        return;
+      }
+
+      lastTapRef.current = now;
+      singleTapTimerRef.current = setTimeout(togglePlay, DOUBLE_TAP_MS);
+    },
+    [likeFromDoubleTap, togglePlay]
+  );
+
+  const removeBurst = useCallback((key) => {
+    setBursts((prev) => prev.filter((b) => b.key !== key));
+  }, []);
+
   if (!id) return null;
 
   /* -------------------- JSX -------------------- */
@@ -222,6 +296,8 @@ const ShotPlayer = ({
         autoPlay
         controls
         playsInline
+        onPlay={() => setPaused(false)}
+        onPause={() => setPaused(true)}
         className="w-full h-full rounded-lg"
       >
         <source
@@ -231,6 +307,50 @@ const ShotPlayer = ({
         Your browser does not support
         the video tag.
       </video>
+
+      {/* Tap layer: single tap plays/pauses, double tap likes.
+          Stops above the native controls bar so it stays usable. */}
+      <div
+        onClick={onTap}
+        className="absolute inset-x-0 top-0 bottom-12 z-[5] overflow-hidden rounded-t-lg cursor-pointer select-none"
+        style={{ touchAction: "manipulation" }}
+      >
+        {paused && (
+          <div className="shot-paused-icon absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="text-white/80 text-6xl drop-shadow-lg">▶</span>
+          </div>
+        )}
+
+        {bursts.map((b) => (
+          <div
+            key={b.key}
+            className="absolute pointer-events-none"
+            style={{ left: b.x, top: b.y }}
+            onAnimationEnd={(e) => {
+              if (e.target === e.currentTarget.firstChild) {
+                removeBurst(b.key);
+              }
+            }}
+          >
+            <span
+              className="shot-like-pop absolute text-blue-500"
+              style={{ "--tilt": `${b.tilt}deg` }}
+            >
+              <FaThumbsUp size={96} />
+            </span>
+            <span className="shot-like-ring absolute" />
+            {Array.from({ length: BURST_PARTICLES }).map((_, i) => (
+              <span
+                key={i}
+                className="shot-like-particle absolute"
+                style={{
+                  "--angle": `${(360 / BURST_PARTICLES) * i}deg`,
+                }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
 
       {/* Video Info */}
       <div className="absolute bottom-4 left-4 right-16 text-gray-300 z-10">
@@ -300,7 +420,11 @@ const ShotPlayer = ({
               : "text-white hover:text-blue-400"
           }`}
         >
-          <FaThumbsUp size={28} />
+          <FaThumbsUp
+            key={likePulse}
+            size={28}
+            className={likePulse ? "shot-like-button-pulse" : ""}
+          />
           <span className="text-sm">
             {formatNumber(likes)}
           </span>
